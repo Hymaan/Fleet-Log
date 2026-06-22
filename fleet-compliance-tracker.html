@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FleetLog — Document & Mobilization Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1B2A33;
+  --ink-soft:#52626A;
+  --paper:#E5E8E6;
+  --card:#F8F9F7;
+  --card-hover:#FFFFFF;
+  --line:#CBD1CC;
+  --line-soft:#DCE0DC;
+  --yellow:#F2B705;
+  --yellow-deep:#B8870A;
+  --red:#C32737;
+  --red-soft:#F7DDE0;
+  --red-text:#9A1F2C;
+  --green:#1E7A52;
+  --green-soft:#D9EEE1;
+  --green-text:#176440;
+  --na:#7C8A90;
+  --na-soft:#E4E7E5;
+  --radius:10px;
+  --shadow-sm: 0 1px 2px rgba(27,42,51,0.08);
+  --shadow-md: 0 4px 16px rgba(27,42,51,0.14), 0 1px 3px rgba(27,42,51,0.10);
+  --font-display:'Oswald',sans-serif;
+  --font-body:'IBM Plex Sans',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  background-image:
+    linear-gradient(transparent 0, transparent 27px, rgba(27,42,51,0.035) 27px, rgba(27,42,51,0.035) 28px);
+  background-size: 100% 28px;
+  color:var(--ink);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+#app{max-width:1080px;margin:0 auto;padding:18px 18px 60px;}
+
+/* ===== Header ===== */
+.topbar{
+  display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;
+  padding-bottom:14px;margin-bottom:16px;border-bottom:3px solid var(--ink);
+}
+.brand-mark{
+  font-family:var(--font-display);font-weight:700;font-size:30px;letter-spacing:0.5px;
+  text-transform:uppercase;color:var(--ink);line-height:1;
+}
+.brand-mark span{color:var(--yellow-deep);background:linear-gradient(transparent 60%, var(--yellow) 60%);padding:0 2px;}
+.brand-sub{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink-soft);margin-top:3px;
+}
+.shared-badge{
+  display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10px;
+  letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--line);
+  border-radius:20px;padding:3px 9px;margin-top:6px;cursor:default;background:var(--card);
+}
+.shared-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;}
+
+.stat-strip{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.stat-tile{
+  background:var(--ink);color:var(--card);border-radius:8px 8px 2px 2px;padding:8px 14px 7px;
+  min-width:88px;text-align:center;position:relative;box-shadow:var(--shadow-sm);
+  border-bottom:4px solid var(--yellow);
+}
+.stat-tile.alt{border-bottom-color:var(--red);}
+.stat-tile .num{font-family:var(--font-display);font-size:24px;font-weight:600;line-height:1;}
+.stat-tile .lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:0.75;margin-top:3px;}
+.save-indicator{font-family:var(--font-mono);font-size:10px;letter-spacing:0.5px;color:var(--ink-soft);text-align:right;width:100%;margin-top:-4px;}
+
+/* ===== Toolbar ===== */
+.toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;}
+.tab-btn{
+  font-family:var(--font-display);font-size:13px;letter-spacing:0.4px;text-transform:uppercase;
+  background:var(--card);border:1px solid var(--line);border-bottom:none;color:var(--ink-soft);
+  padding:8px 14px 7px;border-radius:7px 7px 0 0;cursor:pointer;position:relative;top:1px;
+  transition:background .15s,color .15s;
+}
+.tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.tab-btn:hover:not(.active){background:var(--card-hover);}
+
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+#searchInput{
+  font-family:var(--font-body);font-size:13px;padding:8px 12px;border:1px solid var(--line);
+  border-radius:7px;background:var(--card);color:var(--ink);min-width:180px;
+}
+#searchInput:focus{outline:2px solid var(--yellow-deep);outline-offset:1px;}
+.btn{
+  font-family:var(--font-display);font-size:12.5px;letter-spacing:0.4px;text-transform:uppercase;
+  padding:8px 13px;border-radius:7px;cursor:pointer;border:1px solid var(--line);background:var(--card);
+  color:var(--ink);transition:transform .1s, background .15s;white-space:nowrap;
+}
+.btn:hover{background:var(--card-hover);}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--yellow);border-color:var(--yellow-deep);color:var(--ink);font-weight:600;}
+.btn-primary:hover{background:#f7c526;}
+.btn-toggle.active{background:var(--red-soft);border-color:var(--red);color:var(--red-text);}
+.btn-danger{border-color:var(--red);color:var(--red-text);background:var(--card);}
+.btn-danger:hover{background:var(--red-soft);}
+.btn:focus-visible,.tab-btn:focus-visible,.stamp:focus-visible{outline:2px solid var(--yellow-deep);outline-offset:2px;}
+
+/* ===== List ===== */
+.list{display:flex;flex-direction:column;gap:10px;}
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--ink-soft);border:1px dashed var(--line);border-radius:var(--radius);background:var(--card);
+}
+.empty-state .big{font-family:var(--font-display);font-size:20px;color:var(--ink);margin-bottom:6px;text-transform:uppercase;}
+
+.card{
+  background:var(--card);border:1px solid var(--line-soft);border-radius:var(--radius);
+  padding:13px 16px;box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s, transform .1s;
+}
+.card:hover{box-shadow:var(--shadow-md);background:var(--card-hover);}
+.card-top{display:flex;align-items:flex-start;gap:12px;}
+.si-tag{
+  font-family:var(--font-mono);font-weight:600;font-size:13px;background:var(--ink);color:var(--card);
+  min-width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;
+}
+.card-main{flex:1;min-width:0;}
+.card-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.card-title{font-family:var(--font-display);font-size:17px;font-weight:600;color:var(--ink);}
+.cat-chip{
+  font-family:var(--font-mono);font-size:9.5px;letter-spacing:0.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper);
+}
+.pending-flag{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.5px;text-transform:uppercase;
+  color:var(--red-text);background:var(--red-soft);padding:2px 8px;border-radius:20px;font-weight:600;
+}
+.ok-flag{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.5px;text-transform:uppercase;
+  color:var(--green-text);background:var(--green-soft);padding:2px 8px;border-radius:20px;font-weight:600;
+}
+.progress-track{height:6px;background:var(--line-soft);border-radius:4px;margin-top:8px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);border-radius:4px;transition:width .3s;}
+.dots-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+
+.stamp{
+  font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:0.3px;
+  padding:3px 6px;border-radius:5px;border:1px solid transparent;cursor:pointer;line-height:1.3;
+  display:inline-flex;align-items:center;gap:3px;user-select:none;
+}
+.stamp.status-pending{background:var(--red-soft);color:var(--red-text);border-color:#e6b6bc;}
+.stamp.status-done{background:var(--green-soft);color:var(--green-text);border-color:#a9d8c0;}
+.stamp.status-na{background:var(--na-soft);color:var(--na);border-color:#d3d8d6;}
+.stamp .note-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7;}
+.stamp-hit{animation:stampHit 240ms ease;}
+@keyframes stampHit{
+  0%{transform:scale(0.82) rotate(-5deg);}
+  55%{transform:scale(1.12) rotate(2deg);}
+  100%{transform:scale(1) rotate(0deg);}
+}
+@media (prefers-reduced-motion: reduce){
+  .stamp-hit{animation:none;}
+}
+
+/* ===== Modal / Detail panel ===== */
+.overlay{
+  position:fixed;inset:0;background:rgba(27,42,51,0.45);display:flex;justify-content:flex-end;
+  z-index:50;opacity:0;pointer-events:none;transition:opacity .18s;
+}
+.overlay.open{opacity:1;pointer-events:auto;}
+.overlay.center{justify-content:center;align-items:center;}
+.panel{
+  background:var(--paper);width:480px;max-width:100%;height:100%;overflow-y:auto;
+  box-shadow:-8px 0 24px rgba(0,0,0,0.18);transform:translateX(20px);transition:transform .2s;
+  padding:20px 20px 100px;border-left:4px solid var(--ink);
+}
+.overlay.open .panel{transform:translateX(0);}
+.panel.small-card{
+  width:380px;height:auto;max-height:90vh;border-radius:var(--radius);border-left:none;
+  border:1px solid var(--line);box-shadow:var(--shadow-md);padding:22px;
+}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.panel-title{font-family:var(--font-display);font-size:19px;text-transform:uppercase;letter-spacing:0.4px;}
+.icon-btn{
+  background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);line-height:1;padding:4px;
+}
+.icon-btn:hover{color:var(--ink);}
+
+.field-group{margin-bottom:14px;}
+.field-label{
+  display:block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.6px;text-transform:uppercase;
+  color:var(--ink-soft);margin-bottom:5px;
+}
+.field-input, .field-select{
+  width:100%;font-family:var(--font-body);font-size:14px;padding:9px 11px;border:1px solid var(--line);
+  border-radius:7px;background:var(--card);color:var(--ink);
+}
+.field-input:focus,.field-select:focus{outline:2px solid var(--yellow-deep);outline-offset:1px;}
+
+.checklist-grid{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+.check-row{
+  display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line-soft);
+  border-radius:8px;padding:8px 10px;
+}
+.check-label{flex:1;font-size:13px;font-weight:500;color:var(--ink);}
+.check-note{
+  width:108px;font-family:var(--font-mono);font-size:11px;padding:6px 8px;border:1px solid var(--line);
+  border-radius:6px;background:#fff;color:var(--ink-soft);
+}
+.check-note:focus{outline:2px solid var(--yellow-deep);}
+.check-row .stamp{min-width:74px;justify-content:center;font-size:10.5px;padding:6px 8px;}
+
+.panel-footer{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:14px;border-top:1px solid var(--line);}
+
+.loading-screen{
+  position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;z-index:100;
+}
+.loading-screen .spin{
+  width:26px;height:26px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--ink);
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-screen .ltext{font-family:var(--font-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);}
+
+footer.app-footer{
+  text-align:center;margin-top:30px;font-family:var(--font-mono);font-size:10.5px;color:var(--ink-soft);
+  letter-spacing:0.4px;
+}
+footer.app-footer button{
+  background:none;border:none;color:var(--ink-soft);text-decoration:underline;cursor:pointer;font-family:var(--font-mono);font-size:10.5px;
+}
+
+@media (max-width:680px){
+  .topbar{flex-direction:column;align-items:flex-start;}
+  .toolbar{flex-direction:column;align-items:stretch;}
+  .controls{justify-content:space-between;}
+  #searchInput{flex:1;min-width:0;}
+  .panel{width:100%;}
+  .check-row{flex-wrap:wrap;}
+  .check-note{width:100%;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div>
+      <div class="brand-mark">FLEET<span>LOG</span></div>
+      <div class="brand-sub">Document &amp; Mobilization Register</div>
+      <div class="shared-badge" title="Backed by a shared Supabase database — everyone with this link sees live updates">Live shared database</div>
+    </div>
+    <div>
+      <div class="stat-strip" id="statStrip"></div>
+      <div class="save-indicator" id="saveIndicator"></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs" id="tabs"></div>
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Search units…">
+      <button class="btn btn-toggle" id="pendingToggle">Pending only</button>
+      <button class="btn" id="exportBtn">Export CSV</button>
+      <button class="btn btn-primary" id="addBtn">+ Add unit</button>
+    </div>
+  </div>
+
+  <div class="list" id="listContainer"></div>
+
+  <footer class="app-footer">
+    Tap a row to open full record · Tap a stamp to cycle Pending → Done → N/A
+    &nbsp;·&nbsp; <button id="resetBtn">Reset to sample data</button>
+  </footer>
+</div>
+
+<div id="modalRoot"></div>
+<div id="loadingRoot"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ===== Supabase config — replace with your project's values =====
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const CHECKLISTS = {
+  earth_moving: {
+    label: 'Earth Moving Vehicles',
+    short: 'EMV',
+    fields: [
+      ['istimara','Istimara','IST'],
+      ['insurance_vehicle','Insurance (Vehicle)','INS'],
+      ['tuv','TUV Inspection','TUV'],
+      ['tamm','Tamm Clearance','TAM'],
+      ['mvpi','MVPI','MVPI'],
+      ['iqama_dl','Iqama & Driving License','IQ/DL'],
+      ['muqeem','Muqeem Status','MUQ'],
+      ['passport','Passport Copy','PASS'],
+      ['insurance_driver','Insurance (Driver)','INS-D'],
+      ['third_party','3rd Party Liability','3RD'],
+      ['body_fitness','Body Fitness (Aramco)','B.FIT'],
+      ['cr','Commercial Registration','CR'],
+      ['chamber','Chamber of Commerce','CHB'],
+      ['photo','Unit Photo','PHOTO'],
+      ['safety','Safety Clearance','SAFE'],
+      ['mobilized','Mobilized to Site','MOB'],
+    ]
+  },
+  vehicle_equipment: {
+    label: 'Vehicles & Equipment',
+    short: 'V&E',
+    fields: [
+      ['istimara','Istimara','IST'],
+      ['insurance_vehicle','Insurance (Vehicle)','INS'],
+      ['tamm','Tamm Clearance','TAM'],
+      ['mvpi','MVPI','MVPI'],
+      ['iqama_dl','Iqama & Driving License','IQ/DL'],
+      ['muqeem','Muqeem Status','MUQ'],
+      ['passport','Passport Copy','PASS'],
+      ['insurance_driver','Insurance (Driver)','INS-D'],
+      ['qadiyat','Qadiyat','QAD'],
+      ['body_fitness','Body Fitness (Aramco)','B.FIT'],
+      ['cr','Commercial Registration','CR'],
+      ['chamber','Chamber of Commerce','CHB'],
+      ['photo','Unit Photo','PHOTO'],
+      ['safety','Safety Clearance','SAFE'],
+      ['mobilized','Mobilized to Site','MOB'],
+    ]
+  }
+};
+
+function mkItems(catKey, overrides){
+  const items = {};
+  CHECKLISTS[catKey].fields.forEach(([k])=>{
+    const o = overrides[k];
+    items[k] = { status: o ? o[0] : 'pending', note: (o && o[1]) ? o[1] : '' };
+  });
+  return items;
+}
+
+function buildSeed(){
+  const rows = [
+    ['earth_moving',1,'New Bobcat 7792',{
+      istimara:['done'],insurance_vehicle:['done'],tuv:['pending'],tamm:['done'],
+      mvpi:['done','Valid till 2026'],iqama_dl:['done'],muqeem:['done'],passport:['done'],
+      insurance_driver:['done'],third_party:['done'],body_fitness:['done'],cr:['pending'],
+      chamber:['pending'],photo:['done'],safety:['pending'],mobilized:['pending']
+    }],
+    ['earth_moving',2,'Repl Bobcat Opt 3976',{
+      istimara:['pending'],insurance_vehicle:['pending'],tuv:['pending'],tamm:['pending'],
+      mvpi:['pending'],iqama_dl:['done'],muqeem:['done'],passport:['done'],
+      insurance_driver:['pending'],third_party:['done'],body_fitness:['done'],cr:['done'],
+      chamber:['pending'],photo:['done'],safety:['pending'],mobilized:['pending']
+    }],
+    ['vehicle_equipment',1,'New Bus 4676',{
+      istimara:['done'],insurance_vehicle:['done'],tamm:['done'],mvpi:['done'],
+      iqama_dl:['pending'],muqeem:['done'],passport:['done'],insurance_driver:['done'],
+      qadiyat:['pending'],body_fitness:['done'],cr:['done'],chamber:['pending'],
+      photo:['done'],safety:['pending'],mobilized:['pending']
+    }],
+    ['vehicle_equipment',2,'New Dyna 1977',{
+      istimara:['done'],insurance_vehicle:['done'],tamm:['done'],mvpi:['done'],
+      iqama_dl:['done'],muqeem:['done'],passport:['done'],insurance_driver:['done'],
+      qadiyat:['done'],body_fitness:['done'],cr:['done'],chamber:['done'],
+      photo:['done'],safety:['done'],mobilized:['done']
+    }],
+    ['vehicle_equipment',3,'New Trailer (not Confirmed)',{
+      istimara:['done'],insurance_vehicle:['done'],tamm:['pending'],mvpi:['done'],
+      iqama_dl:['done'],muqeem:['done'],passport:['done'],insurance_driver:['pending'],
+      qadiyat:['pending'],body_fitness:['pending'],cr:['pending'],chamber:['pending'],
+      photo:['pending'],safety:['pending'],mobilized:['pending']
+    }],
+    ['vehicle_equipment',4,'Repl Bus Driver 8944',{
+      istimara:['pending'],insurance_vehicle:['pending'],tamm:['pending'],mvpi:['pending'],
+      iqama_dl:['done'],muqeem:['done'],passport:['done'],insurance_driver:['done'],
+      qadiyat:['done'],body_fitness:['done'],cr:['done'],chamber:['done'],
+      photo:['done'],safety:['done'],mobilized:['pending']
+    }],
+    ['vehicle_equipment',5,'Repl Trailer Driver 9342',{
+      istimara:['pending'],insurance_vehicle:['pending'],tamm:['pending'],mvpi:['pending'],
+      iqama_dl:['done'],muqeem:['done'],passport:['done'],insurance_driver:['done'],
+      qadiyat:['done'],body_fitness:['pending'],cr:['done'],chamber:['done'],
+      photo:['done'],safety:['pending'],mobilized:['pending']
+    }],
+  ];
+  const now = Date.now();
+  return rows.map((r,i)=>({
+    id: 'v'+(now+i),
+    category: r[0], si: r[1], description: r[2],
+    items: mkItems(r[0], r[3]),
+    createdAt: now, updatedAt: now
+  }));
+}
+
+let vehicles = [];
+let state = { tab:'all', search:'', pendingOnly:false };
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fieldsFor(cat){ return CHECKLISTS[cat].fields; }
+
+function computeStats(v){
+  const fields = fieldsFor(v.category);
+  let done=0, pending=0, na=0;
+  fields.forEach(([k])=>{
+    const st = v.items[k] ? v.items[k].status : 'pending';
+    if(st==='done') done++; else if(st==='na') na++; else pending++;
+  });
+  const denom = done+pending;
+  const pct = denom===0 ? 100 : Math.round((done/denom)*100);
+  return {done,pending,na,pct,total:fields.length};
+}
+
+function fleetStats(){
+  let totalPending=0, totalDone=0, fullyCompliant=0;
+  vehicles.forEach(v=>{
+    const s = computeStats(v);
+    totalPending += s.pending; totalDone += s.done;
+    if(s.pending===0) fullyCompliant++;
+  });
+  const denom = totalDone+totalPending;
+  const compliance = denom===0 ? 100 : Math.round((totalDone/denom)*100);
+  return { units: vehicles.length, compliance, openItems: totalPending, fullyCompliant };
+}
+
+function rowToVehicle(row){
+  return { id:row.id, category:row.category, si:row.si, description:row.description,
+    items: row.items || {}, createdAt: row.created_at, updatedAt: row.updated_at };
+}
+function vehicleToRow(v){
+  return { id:v.id, category:v.category, si:v.si, description:v.description,
+    items:v.items, updated_at:new Date().toISOString() };
+}
+
+async function loadData(){
+  showLoading(true);
+  try{
+    const { data, error } = await db.from('vehicles').select('*').order('category').order('si');
+    if(error) throw error;
+    if(data && data.length){
+      vehicles = data.map(rowToVehicle);
+    } else {
+      vehicles = buildSeed();
+      for(const v of vehicles){
+        const { error: insErr } = await db.from('vehicles').insert(vehicleToRow(v));
+        if(insErr) throw insErr;
+      }
+    }
+    setSaveIndicator('Connected');
+    subscribeRealtime();
+  }catch(e){
+    console.error(e);
+    vehicles = buildSeed();
+    setSaveIndicator('Offline — check Supabase config in the code');
+  }
+  showLoading(false);
+  renderAll();
+}
+
+async function saveVehicle(v){
+  setSaveIndicator('Saving…');
+  try{
+    const { error } = await db.from('vehicles').upsert(vehicleToRow(v));
+    if(error) throw error;
+    setSaveIndicator('Saved');
+  }catch(e){
+    console.error(e);
+    setSaveIndicator('Save failed — check connection');
+  }
+}
+
+async function deleteVehicleRow(vid){
+  try{
+    const { error } = await db.from('vehicles').delete().eq('id', vid);
+    if(error) throw error;
+  }catch(e){
+    console.error(e);
+    alert('Could not delete this unit — check your connection and try again.');
+  }
+}
+
+async function resetAll(){
+  setSaveIndicator('Resetting…');
+  try{
+    await db.from('vehicles').delete().neq('id', '__none__');
+    const seed = buildSeed();
+    for(const v of seed){ await db.from('vehicles').insert(vehicleToRow(v)); }
+    vehicles = seed;
+    setSaveIndicator('Saved');
+  }catch(e){
+    console.error(e);
+    setSaveIndicator('Reset failed — check connection');
+  }
+}
+
+let realtimeSubscribed = false;
+let refetchTimer = null;
+function subscribeRealtime(){
+  if(realtimeSubscribed) return;
+  realtimeSubscribed = true;
+  db.channel('vehicles-changes')
+    .on('postgres_changes', { event:'*', schema:'public', table:'vehicles' }, ()=>{
+      clearTimeout(refetchTimer);
+      refetchTimer = setTimeout(async ()=>{
+        try{
+          const { data, error } = await db.from('vehicles').select('*').order('category').order('si');
+          if(error) throw error;
+          vehicles = (data||[]).map(rowToVehicle);
+          renderAll();
+        }catch(e){ console.error(e); }
+      }, 250);
+    })
+    .subscribe();
+}
+
+function setSaveIndicator(text){
+  const el = document.getElementById('saveIndicator');
+  if(el) el.textContent = text;
+}
+
+function showLoading(on){
+  const root = document.getElementById('loadingRoot');
+  root.innerHTML = on ? `<div class="loading-screen"><div class="spin"></div><div class="ltext">Loading fleet register…</div></div>` : '';
+}
+
+/* ===== Rendering ===== */
+function renderAll(){
+  renderStatStrip();
+  renderTabs();
+  renderList();
+}
+
+function renderStatStrip(){
+  const s = fleetStats();
+  document.getElementById('statStrip').innerHTML = `
+    <div class="stat-tile"><div class="num">${s.units}</div><div class="lbl">Units</div></div>
+    <div class="stat-tile"><div class="num">${s.compliance}%</div><div class="lbl">Compliant</div></div>
+    <div class="stat-tile alt"><div class="num">${s.openItems}</div><div class="lbl">Open items</div></div>
+  `;
+}
+
+function renderTabs(){
+  const tabs = [['all','All'],['earth_moving',CHECKLISTS.earth_moving.label],['vehicle_equipment',CHECKLISTS.vehicle_equipment.label]];
+  document.getElementById('tabs').innerHTML = tabs.map(([key,label])=>
+    `<button class="tab-btn ${state.tab===key?'active':''}" data-tab="${key}">${escapeHtml(label)}</button>`
+  ).join('');
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.tab = btn.dataset.tab; renderTabs(); renderList(); });
+  });
+}
+
+function filteredVehicles(){
+  return vehicles.filter(v=>{
+    if(state.tab!=='all' && v.category!==state.tab) return false;
+    if(state.pendingOnly){
+      const s = computeStats(v);
+      if(s.pending===0) return false;
+    }
+    if(state.search){
+      const q = state.search.toLowerCase();
+      const hay = (v.description+' '+v.si).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b)=> a.category===b.category ? a.si-b.si : a.category.localeCompare(b.category));
+}
+
+function renderList(){
+  const list = filteredVehicles();
+  const container = document.getElementById('listContainer');
+  if(list.length===0){
+    container.innerHTML = `<div class="empty-state">
+      <div class="big">No units match</div>
+      <div>Try clearing the search or filters, or add a new unit to start tracking it.</div>
+    </div>`;
+    return;
+  }
+  container.innerHTML = list.map(v=>{
+    const stats = computeStats(v);
+    const fields = fieldsFor(v.category);
+    const dots = fields.map(([k,label,short])=>{
+      const item = v.items[k] || {status:'pending',note:''};
+      const title = label + ': ' + item.status.toUpperCase() + (item.note ? ' — '+item.note : '');
+      return `<button class="stamp status-${item.status}" data-vid="${v.id}" data-key="${k}" title="${escapeHtml(title)}">${short}${item.note?'<span class="note-dot"></span>':''}</button>`;
+    }).join('');
+    return `<div class="card" data-open="${v.id}">
+      <div class="card-top">
+        <div class="si-tag">${v.si}</div>
+        <div class="card-main">
+          <div class="card-title-row">
+            <div class="card-title">${escapeHtml(v.description)}</div>
+            <span class="cat-chip">${CHECKLISTS[v.category].short}</span>
+            ${stats.pending===0 ? `<span class="ok-flag">Complete</span>` : `<span class="pending-flag">${stats.pending} open</span>`}
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:${stats.pct}%"></div></div>
+          <div class="dots-row">${dots}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click', (e)=>{
+      if(e.target.closest('.stamp')) return;
+      openDetail(card.dataset.open);
+    });
+  });
+  container.querySelectorAll('.stamp').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      cycleStatus(btn.dataset.vid, btn.dataset.key, btn);
+    });
+  });
+}
+
+function cycleStatus(vid, key, btnEl){
+  const v = vehicles.find(x=>x.id===vid);
+  if(!v) return;
+  const cur = v.items[key] ? v.items[key].status : 'pending';
+  const next = cur==='pending' ? 'done' : cur==='done' ? 'na' : 'pending';
+  if(!v.items[key]) v.items[key] = {status:'pending',note:''};
+  v.items[key].status = next;
+  v.updatedAt = Date.now();
+  if(btnEl){
+    btnEl.classList.remove('status-pending','status-done','status-na');
+    btnEl.classList.add('status-'+next, 'stamp-hit');
+    setTimeout(()=>btnEl.classList.remove('stamp-hit'), 260);
+  }
+  renderStatStrip();
+  const card = btnEl ? btnEl.closest('.card') : null;
+  if(card){
+    const stats = computeStats(v);
+    const fill = card.querySelector('.progress-fill');
+    if(fill) fill.style.width = stats.pct+'%';
+    const flag = card.querySelector('.pending-flag, .ok-flag');
+    if(flag){
+      if(stats.pending===0){ flag.outerHTML = `<span class="ok-flag">Complete</span>`; }
+      else{ flag.outerHTML = `<span class="pending-flag">${stats.pending} open</span>`; }
+    }
+  }
+  saveVehicle(v);
+}
+
+/* ===== Detail panel ===== */
+function openDetail(vid){
+  const v = vehicles.find(x=>x.id===vid);
+  if(!v) return;
+  const fields = fieldsFor(v.category);
+  const rows = fields.map(([k,label])=>{
+    const item = v.items[k] || {status:'pending',note:''};
+    return `<div class="check-row">
+      <div class="check-label">${escapeHtml(label)}</div>
+      <input class="check-note" data-key="${k}" placeholder="note / expiry" value="${escapeHtml(item.note)}">
+      <button class="stamp status-${item.status}" data-key="${k}">${item.status.toUpperCase()}</button>
+    </div>`;
+  }).join('');
+
+  const html = `
+  <div class="overlay open" id="detailOverlay">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Unit Record</div>
+        <button class="icon-btn" id="closeDetail">&times;</button>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <input class="field-input" id="editDesc" value="${escapeHtml(v.description)}">
+      </div>
+      <div class="field-group" style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <label class="field-label">SI No.</label>
+          <input class="field-input" id="editSi" type="number" min="1" value="${v.si}">
+        </div>
+        <div style="flex:2;">
+          <label class="field-label">Category</label>
+          <select class="field-select" id="editCat">
+            <option value="earth_moving" ${v.category==='earth_moving'?'selected':''}>${CHECKLISTS.earth_moving.label}</option>
+            <option value="vehicle_equipment" ${v.category==='vehicle_equipment'?'selected':''}>${CHECKLISTS.vehicle_equipment.label}</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="field-label" style="margin-top:6px;display:block;">Document checklist</label>
+      <div class="checklist-grid" id="checklistGrid">${rows}</div>
+
+      <div class="panel-footer">
+        <button class="btn btn-danger" id="deleteUnit">Delete unit</button>
+        <button class="btn btn-primary" id="doneEditing">Done</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('modalRoot').innerHTML = html;
+
+  const overlay = document.getElementById('detailOverlay');
+  const close = ()=>{ overlay.classList.remove('open'); setTimeout(()=>{ document.getElementById('modalRoot').innerHTML=''; }, 180); };
+  document.getElementById('closeDetail').addEventListener('click', close);
+  document.getElementById('doneEditing').addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+
+  document.getElementById('editDesc').addEventListener('change', (e)=>{
+    v.description = e.target.value; v.updatedAt = Date.now(); saveVehicle(v); renderList();
+  });
+  document.getElementById('editSi').addEventListener('change', (e)=>{
+    v.si = parseInt(e.target.value)||v.si; v.updatedAt = Date.now(); saveVehicle(v); renderList();
+  });
+  document.getElementById('editCat').addEventListener('change', (e)=>{
+    const newCat = e.target.value;
+    if(newCat===v.category) return;
+    const newFields = fieldsFor(newCat);
+    const newItems = {};
+    newFields.forEach(([k])=>{ newItems[k] = v.items[k] ? v.items[k] : {status:'pending',note:''}; });
+    v.category = newCat; v.items = newItems; v.updatedAt = Date.now();
+    saveVehicle(v); renderList();
+    openDetail(vid);
+  });
+
+  overlay.querySelectorAll('.checklist-grid .stamp').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.key;
+      const cur = v.items[key].status;
+      const next = cur==='pending' ? 'done' : cur==='done' ? 'na' : 'pending';
+      v.items[key].status = next; v.updatedAt = Date.now();
+      btn.classList.remove('status-pending','status-done','status-na');
+      btn.classList.add('status-'+next,'stamp-hit');
+      btn.textContent = next.toUpperCase();
+      setTimeout(()=>btn.classList.remove('stamp-hit'),260);
+      saveVehicle(v); renderStatStrip(); renderList();
+    });
+  });
+  overlay.querySelectorAll('.check-note').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const key = inp.dataset.key;
+      v.items[key].note = inp.value; v.updatedAt = Date.now();
+      saveVehicle(v); renderList();
+    });
+  });
+
+  document.getElementById('deleteUnit').addEventListener('click', async ()=>{
+    if(!confirm(`Delete "${v.description}"? This cannot be undone.`)) return;
+    vehicles = vehicles.filter(x=>x.id!==vid);
+    await deleteVehicleRow(vid);
+    close();
+    renderAll();
+  });
+}
+
+/* ===== Add unit modal ===== */
+function openAddModal(){
+  const defaultCat = state.tab!=='all' ? state.tab : 'earth_moving';
+  const nextSi = (cat)=>{
+    const existing = vehicles.filter(v=>v.category===cat).map(v=>v.si);
+    return existing.length ? Math.max(...existing)+1 : 1;
+  };
+  const html = `
+  <div class="overlay open center" id="addOverlay">
+    <div class="panel small-card">
+      <div class="panel-header">
+        <div class="panel-title">Add Unit</div>
+        <button class="icon-btn" id="closeAdd">&times;</button>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Category</label>
+        <select class="field-select" id="addCat">
+          <option value="earth_moving" ${defaultCat==='earth_moving'?'selected':''}>${CHECKLISTS.earth_moving.label}</option>
+          <option value="vehicle_equipment" ${defaultCat==='vehicle_equipment'?'selected':''}>${CHECKLISTS.vehicle_equipment.label}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <input class="field-input" id="addDesc" placeholder="e.g. New Excavator 5521" autofocus>
+      </div>
+      <div class="field-group">
+        <label class="field-label">SI No.</label>
+        <input class="field-input" id="addSi" type="number" min="1" value="${nextSi(defaultCat)}">
+      </div>
+      <div class="panel-footer" style="justify-content:flex-end;">
+        <button class="btn btn-primary" id="createUnit">Create unit</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('modalRoot').innerHTML = html;
+  const overlay = document.getElementById('addOverlay');
+  const close = ()=>{ overlay.classList.remove('open'); setTimeout(()=>{ document.getElementById('modalRoot').innerHTML=''; },180); };
+  document.getElementById('closeAdd').addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  document.getElementById('addCat').addEventListener('change', (e)=>{
+    document.getElementById('addSi').value = nextSi(e.target.value);
+  });
+  document.getElementById('createUnit').addEventListener('click', async ()=>{
+    const cat = document.getElementById('addCat').value;
+    const desc = document.getElementById('addDesc').value.trim();
+    const si = parseInt(document.getElementById('addSi').value) || nextSi(cat);
+    if(!desc){ alert('Please enter a description for this unit.'); return; }
+    const v = { id:'v'+Date.now(), category:cat, si, description:desc, items: mkItems(cat,{}), createdAt:Date.now(), updatedAt:Date.now() };
+    vehicles.push(v);
+    await saveVehicle(v);
+    close();
+    renderAll();
+    openDetail(v.id);
+  });
+}
+
+/* ===== Export ===== */
+function exportCsv(){
+  const list = filteredVehicles();
+  if(list.length===0){ alert('No units to export with the current filters.'); return; }
+  const allFieldKeys = [];
+  const seen = new Set();
+  Object.values(CHECKLISTS).forEach(c=>c.fields.forEach(([k,label])=>{ if(!seen.has(k)){ seen.add(k); allFieldKeys.push([k,label]); }}));
+  const header = ['SI','Description','Category', ...allFieldKeys.map(f=>f[1])];
+  const rows = list.map(v=>{
+    const base = [v.si, v.description, CHECKLISTS[v.category].label];
+    const vals = allFieldKeys.map(([k])=>{
+      const item = v.items[k];
+      if(!item) return 'N/A';
+      let s = item.status.toUpperCase();
+      if(item.note) s += ' ('+item.note+')';
+      return s;
+    });
+    return [...base, ...vals];
+  });
+  const csv = [header, ...rows].map(r=>r.map(cell=>{
+    const s = String(cell);
+    return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'fleetlog-export-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ===== Wire up static controls ===== */
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  state.search = e.target.value; renderList();
+});
+document.getElementById('pendingToggle').addEventListener('click', (e)=>{
+  state.pendingOnly = !state.pendingOnly;
+  e.target.classList.toggle('active', state.pendingOnly);
+  renderList();
+});
+document.getElementById('addBtn').addEventListener('click', openAddModal);
+document.getElementById('exportBtn').addEventListener('click', exportCsv);
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('Reset the entire register back to the original sample data? This replaces all current units for everyone using this tracker.')) return;
+  await resetAll();
+  renderAll();
+});
+
+loadData();
+</script>
+</body>
+</html>
